@@ -1,39 +1,35 @@
 package com.antigravity.dexloop
 
-import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.antigravity.dexloop.strategies.DexConfigurationStrategy
 import com.antigravity.dexloop.strategies.StrategyManager
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class DexLoopIntegrationTest {
 
-    private lateinit var scenario: ActivityScenario<MainActivity>
+    @get:Rule
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Before
     fun setup() {
-        // Reset StrategyManager
         resetStrategyManager()
-
-        // Launch activity
-        scenario = ActivityScenario.launch(MainActivity::class.java)
+        composeTestRule.activityRule.scenario.onActivity { activity ->
+            StrategyManager.init(activity)
+        }
     }
 
     @After
     fun cleanup() {
-        scenario.close()
-
         // Clean up any running strategies
         runBlocking {
             try {
@@ -50,7 +46,7 @@ class DexLoopIntegrationTest {
 
     @Test
     fun testMainActivityLaunches() {
-        scenario.onActivity { activity ->
+        composeTestRule.activityRule.scenario.onActivity { activity ->
             assertNotNull("Activity should not be null", activity)
             assertFalse("Activity should not be finishing", activity.isFinishing)
         }
@@ -58,7 +54,7 @@ class DexLoopIntegrationTest {
 
     @Test
     fun testStrategyManagerInitialization() {
-        scenario.onActivity { activity ->
+        composeTestRule.activityRule.scenario.onActivity { activity ->
             assertTrue("StrategyManager should be initialized",
                 StrategyManager::class.java.getDeclaredField("isInitialized").apply {
                     isAccessible = true
@@ -69,15 +65,15 @@ class DexLoopIntegrationTest {
     @Test
     fun testUIElementsPresent() {
         // Check that main UI elements are present
-        onView(withText("DexLoop Control Center")).check(matches(isDisplayed()))
+        composeTestRule.onNodeWithText("DexLoop Control Center").assertIsDisplayed()
 
         // Check DeX configuration strategy is present
-        onView(withText("DeX Configuration & Setup")).check(matches(isDisplayed()))
+        composeTestRule.onNodeWithText("DeX Configuration & Setup").assertIsDisplayed()
     }
 
     @Test
     fun testDexConfigurationStrategyStartStop() {
-        scenario.onActivity { activity ->
+        composeTestRule.activityRule.scenario.onActivity { _ ->
             // Test starting DeX configuration strategy
             runBlocking {
                 val startResult = StrategyManager.dexConfigurationStrategy.start()
@@ -114,7 +110,7 @@ class DexLoopIntegrationTest {
 
     @Test
     fun testConfigurationPersistence() {
-        scenario.onActivity { activity ->
+        composeTestRule.activityRule.scenario.onActivity { activity ->
             val initialConfig = StrategyManager.displayConfig.value
 
             // Update configuration
@@ -138,7 +134,7 @@ class DexLoopIntegrationTest {
 
     @Test
     fun testOrientationChangeHandling() {
-        scenario.onActivity { activity ->
+        composeTestRule.activityRule.scenario.onActivity { _ ->
             // Simulate orientation change
             val newWidth = 1080
             val newHeight = 1920
@@ -154,7 +150,7 @@ class DexLoopIntegrationTest {
 
     @Test
     fun testDiagnosticsExport() {
-        scenario.onActivity { activity ->
+        composeTestRule.activityRule.scenario.onActivity { activity ->
             // Test that diagnostics can be generated without crashing
             val report = com.antigravity.dexloop.diagnostics.DiagnosticsManager.generateReport(activity)
             assertNotNull("Diagnostic report should not be null", report)
@@ -165,7 +161,7 @@ class DexLoopIntegrationTest {
 
     @Test
     fun testStrategyStatePersistence() {
-        scenario.onActivity { activity ->
+        composeTestRule.activityRule.scenario.onActivity { activity ->
             // Start DeX configuration strategy
             runBlocking {
                 val startResult = StrategyManager.dexConfigurationStrategy.start()
