@@ -61,6 +61,8 @@ class DexConfigurationStrategy(private val context: Context) : Strategy {
                 val errorMsg = prereqResult.exceptionOrNull()?.message ?: "Unknown prerequisite failure"
                 DiagnosticsManager.logError(DexLoopError.STRATEGY_FAILED, "DexConfig", "Prerequisites check failed: $errorMsg")
                 _configurationStatus.value = ConfigurationStatus.PrerequisitesFailed(errorMsg)
+                _isRunning.value = false
+                StrategyManager.saveStrategyState()
                 // Don't stop here - let the user see the error and retry
                 return prereqResult
             }
@@ -75,6 +77,8 @@ class DexConfigurationStrategy(private val context: Context) : Strategy {
                 val errorMsg = settingsResult.exceptionOrNull()?.message ?: "Unknown settings failure"
                 DiagnosticsManager.logError(DexLoopError.STRATEGY_FAILED, "DexConfig", "Settings configuration failed: $errorMsg")
                 _configurationStatus.value = ConfigurationStatus.SettingsFailed(errorMsg)
+                _isRunning.value = false
+                StrategyManager.saveStrategyState()
                 // Don't stop here - let the user see the error but continue to display detection
                 return settingsResult
             }
@@ -103,6 +107,8 @@ class DexConfigurationStrategy(private val context: Context) : Strategy {
             DiagnosticsManager.logError(DexLoopError.STRATEGY_FAILED, "DexConfig", "Critical error: $errorMsg")
             DiagnosticsManager.logError(DexLoopError.STRATEGY_FAILED, "DexConfig", "Stack trace: ${e.stackTraceToString()}")
             _configurationStatus.value = ConfigurationStatus.Failed(errorMsg, true) // Allow retry
+            _isRunning.value = false
+            StrategyManager.saveStrategyState()
             // Don't call stop() here - let user see the error and retry
             Result.failure(e)
         }
