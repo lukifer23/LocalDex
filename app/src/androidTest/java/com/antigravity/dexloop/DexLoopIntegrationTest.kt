@@ -7,6 +7,7 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.antigravity.dexloop.strategies.DexConfigurationStrategy
 import com.antigravity.dexloop.strategies.StrategyManager
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -92,6 +93,23 @@ class DexLoopIntegrationTest {
                     StrategyManager.dexConfigurationStrategy.isRunning.value)
             }
         }
+    }
+
+    @Test
+    fun testDexConfigurationFailureResetsRunningState() = runBlocking {
+        val result = StrategyManager.dexConfigurationStrategy.start()
+
+        assertTrue("Configuration should fail in test environment without Shizuku", result.isFailure)
+        assertFalse("Strategy should not be marked as running after failure",
+            StrategyManager.dexConfigurationStrategy.isRunning.value)
+
+        val status = StrategyManager.dexConfigurationStrategy.configurationStatus.value
+        assertTrue(
+            "Failure status should be terminal",
+            status is DexConfigurationStrategy.ConfigurationStatus.PrerequisitesFailed ||
+                status is DexConfigurationStrategy.ConfigurationStatus.SettingsFailed ||
+                status is DexConfigurationStrategy.ConfigurationStatus.Failed
+        )
     }
 
     @Test
