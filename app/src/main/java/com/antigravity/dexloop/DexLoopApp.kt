@@ -11,7 +11,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.antigravity.dexloop.strategies.StrategyManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 // Simple constants for UI
 object DexLoopColors {
@@ -89,7 +93,20 @@ fun DexLoopControlPanel(
     var showSettings by remember { mutableStateOf(false) }
     val currentConfig by StrategyManager.displayConfig.collectAsState()
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
+
+    var hasOverlayPermission by remember {
+        mutableStateOf(android.provider.Settings.canDrawOverlays(context))
+    }
+
+    LaunchedEffect(lifecycleOwner, context) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            snapshotFlow { android.provider.Settings.canDrawOverlays(context) }
+                .distinctUntilChanged()
+                .collect { hasOverlayPermission = it }
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -122,9 +139,6 @@ fun DexLoopControlPanel(
                     }
 
                     // Overlay Permission
-                    val hasOverlayPermission = androidx.compose.runtime.remember {
-                        android.provider.Settings.canDrawOverlays(context)
-                    }
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
                         Text("Overlay: ", style = androidx.compose.material.MaterialTheme.typography.body1)
                         Text(
@@ -159,9 +173,6 @@ fun DexLoopControlPanel(
                         }
                     }
 
-                    val hasOverlayPermission = androidx.compose.runtime.remember {
-                        android.provider.Settings.canDrawOverlays(context)
-                    }
                     if (!hasOverlayPermission) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(onClick = {
