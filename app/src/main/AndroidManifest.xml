@@ -41,7 +41,8 @@
             android:multiprocess="false"
             android:enabled="true"
             android:exported="true"
-            android:permission="android.permission.INTERNET" />
+            android:grantUriPermissions="true"
+            android:permission="moe.shizuku.manager.permission.API_V23" />
             
     </application>
 
