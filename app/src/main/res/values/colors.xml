@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- DexLoop Brand Colors -->
+    <color name="dexloop_primary">#8B5CF6</color>
+    <color name="dexloop_on_primary">#FFFFFF</color>
+    <color name="dexloop_primary_container">#2D1B69</color>
+    <color name="dexloop_on_primary_container">#E0D4FF</color>
+
+    <color name="dexloop_secondary">#03DAC6</color>
+    <color name="dexloop_on_secondary">#000000</color>
+
+    <color name="dexloop_tertiary">#FFB74D</color>
+    <color name="dexloop_on_tertiary">#000000</color>
+
+    <!-- Status Colors -->
+    <color name="dexloop_success">#4CAF50</color>
+    <color name="dexloop_warning">#FF9800</color>
+    <color name="dexloop_error">#F44336</color>
+    <color name="dexloop_info">#2196F3</color>
+
+    <!-- Strategy Colors -->
+    <color name="dexloop_strategy_1">#8B5CF6</color>
+    <color name="dexloop_strategy_2">#03DAC6</color>
+    <color name="dexloop_strategy_3">#FFB74D</color>
+</resources>
